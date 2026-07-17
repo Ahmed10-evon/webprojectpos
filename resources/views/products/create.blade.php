@@ -53,6 +53,11 @@
                 <input required type="number" name="quantity" value="{{ old('quantity', 1) }}" class="w-full px-4 py-2.5 border rounded font-mono">
             </div>
         </div>
+        <div>
+            <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Reorder Level (Low Stock Alert threshold)</label>
+            <input required type="number" min="0" name="reorder_level" value="{{ old('reorder_level', 5) }}" class="w-full px-4 py-2.5 border rounded font-mono">
+            <p class="text-xs text-gray-400 mt-1">This item will show up under Low Stock Alert once its quantity drops to this number or below.</p>
+        </div>
         <button class="w-full bg-ink text-white py-3 font-bold text-sm uppercase rounded">Save to Database</button>
     </form>
 </div>

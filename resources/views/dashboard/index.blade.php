@@ -4,6 +4,46 @@
 
 @section('content')
 <div class="space-y-6">
+    @if($weather || $timezone || $currency)
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            @if($weather)
+                <div class="bg-white border rounded-lg px-5 py-4 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        @if($weather['icon'])
+                            <img src="https://openweathermap.org/img/wn/{{ $weather['icon'] }}@2x.png" alt="{{ $weather['description'] }}" class="w-11 h-11 -my-2">
+                        @endif
+                        <div>
+                            <p class="font-bold text-sm">{{ $weather['city'] }}</p>
+                            <p class="text-xs text-gray-500">{{ $weather['description'] }} · {{ $weather['humidity'] }}% humidity</p>
+                        </div>
+                    </div>
+                    <p class="font-mono text-xl font-bold">{{ $weather['temp'] }}°{{ $weather['units'] === 'metric' ? 'C' : 'F' }}</p>
+                </div>
+            @endif
+
+            @if($timezone)
+                <div class="bg-white border rounded-lg px-5 py-4">
+                    <p class="text-xs font-bold uppercase text-gray-500 mb-1">Local Time — {{ $timezone['zone'] }}</p>
+                    <p class="font-mono text-xl font-bold">{{ $timezone['formatted'] }}</p>
+                    @if($timezone['abbreviation'])
+                        <p class="text-xs text-gray-500 mt-1">{{ $timezone['abbreviation'] }}{{ $timezone['gmt_offset_hours'] !== null ? ' · GMT'.($timezone['gmt_offset_hours'] >= 0 ? '+' : '').$timezone['gmt_offset_hours'] : '' }}</p>
+                    @endif
+                </div>
+            @endif
+
+            @if($currency)
+                <div class="bg-white border rounded-lg px-5 py-4">
+                    <p class="text-xs font-bold uppercase text-gray-500 mb-1">Exchange Rate — 1 {{ $currency['base'] }}</p>
+                    <div class="flex flex-wrap gap-x-4 gap-y-1">
+                        @foreach($currency['rates'] as $code => $value)
+                            <p class="font-mono text-sm"><span class="text-gray-400">{{ $code }}</span> <span class="font-bold">{{ number_format($value, 2) }}</span></p>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+        </div>
+    @endif
+
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="bg-ink p-7 text-white rounded-lg">
             <p class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">Today's Revenue</p>

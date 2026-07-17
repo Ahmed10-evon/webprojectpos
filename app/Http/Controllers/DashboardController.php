@@ -4,15 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Sale;
+use App\Services\CurrencyService;
+use App\Services\TimezoneService;
+use App\Services\WeatherService;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
-    const LOW_STOCK_THRESHOLD = 3;
+    public function __construct(
+        protected WeatherService $weather,
+        protected TimezoneService $timezone,
+        protected CurrencyService $currency,
+    ) {
+    }
 
     public function index(Request $request)
     {
         $user = $request->user();
+
+        $weather = $this->weather->current();
+        $timezone = $this->timezone->current();
+        $currency = $this->currency->rates();
 
         $todayRevenue = Sale::whereDate('sold_at', today())
             ->where('status', 'completed')
@@ -23,8 +35,10 @@ class DashboardController extends Controller
             ->count();
 
         $activeStock = Product::where('status', '!=', 'archived')->get();
+        // Each product has its own reorder_level now (see Low Stock Alert),
+        // rather than one fixed number for the whole shop.
         $lowStockItems = $activeStock
-            ->filter(fn ($item) => $item->quantity > 0 && $item->quantity <= self::LOW_STOCK_THRESHOLD)
+            ->filter(fn ($item) => $item->isLowStock())
             ->sortBy('quantity')
             ->take(6);
         $outOfStockCount = $activeStock->where('quantity', 0)->count();
@@ -58,7 +72,7 @@ class DashboardController extends Controller
 
         return view('dashboard.index', compact(
             'todayRevenue', 'todayItemsSold', 'lowStockItems',
-            'outOfStockCount', 'recentSales', 'topSellers'
+            'outOfStockCount', 'recentSales', 'topSellers', 'weather', 'timezone', 'currency'
         ));
     }
 }

@@ -53,6 +53,10 @@
                 <input required type="number" name="quantity" value="{{ old('quantity', $product->quantity) }}" class="w-full px-4 py-2.5 border rounded font-mono">
             </div>
         </div>
+        <div>
+            <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Reorder Level (Low Stock Alert threshold)</label>
+            <input required type="number" min="0" name="reorder_level" value="{{ old('reorder_level', $product->reorder_level) }}" class="w-full px-4 py-2.5 border rounded font-mono">
+        </div>
         <div class="flex gap-2">
             <button class="flex-1 bg-ink text-white py-3 font-bold text-sm uppercase rounded">Save Changes</button>
             <a href="{{ route('products.index') }}" class="flex-1 text-center border py-3 font-bold text-sm uppercase rounded">Cancel</a>

@@ -45,6 +45,13 @@
                 <a href="{{ route('brands.index') }}" class="block px-3 py-2 rounded-lg {{ request()->routeIs('brands.*') ? 'bg-brass text-white' : 'hover:bg-white/5' }}">Brands</a>
             @endif
 
+            <p class="px-3 pt-4 pb-1 text-[10px] uppercase tracking-widest text-gray-500">Inventory</p>
+            <a href="{{ route('inventory.low-stock') }}" class="block px-3 py-2 rounded-lg {{ request()->routeIs('inventory.low-stock') ? 'bg-brass text-white' : 'hover:bg-white/5' }}">Low Stock Alert</a>
+            @if($user->isAdmin())
+                <a href="{{ route('inventory.adjustments.index') }}" class="block px-3 py-2 rounded-lg {{ request()->routeIs('inventory.adjustments.*') ? 'bg-brass text-white' : 'hover:bg-white/5' }}">Stock Adjustment</a>
+                <a href="{{ route('inventory.valuation') }}" class="block px-3 py-2 rounded-lg {{ request()->routeIs('inventory.valuation') ? 'bg-brass text-white' : 'hover:bg-white/5' }}">Inventory Valuation</a>
+            @endif
+
             @if($user->isAdmin())
                 <p class="px-3 pt-4 pb-1 text-[10px] uppercase tracking-widest text-gray-500">Purchases</p>
                 <a href="{{ route('purchases.requisition.index') }}" class="block px-3 py-2 rounded-lg {{ request()->routeIs('purchases.requisition.*') ? 'bg-brass text-white' : 'hover:bg-white/5' }}">Requisition</a>

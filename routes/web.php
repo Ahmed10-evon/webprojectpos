@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\DailyCostController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Inventory\InventoryValuationController;
+use App\Http\Controllers\Inventory\LowStockController;
+use App\Http\Controllers\Inventory\StockAdjustmentController;
 use App\Http\Controllers\Membership\MembershipController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProfileController;
@@ -44,6 +47,9 @@ Route::middleware('auth')->group(function () {
     // Products: viewing the list is fine for both roles; managing it is admin-only (below).
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 
+    // Low Stock Alert — informational, open to both roles (same as List Products).
+    Route::get('/inventory/low-stock', [LowStockController::class, 'index'])->name('inventory.low-stock');
+
     // POS terminal — the core "ring up a sale" flow, open to both roles.
     Route::prefix('pos')->name('pos.')->group(function () {
         Route::get('/', [PosController::class, 'index'])->name('index');
@@ -75,6 +81,12 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Products: register new product, edit, archive, price updates, and the
     // Categories / Units / Brands reference lists are all admin-only.
     Route::get('/products/add', [ProductController::class, 'create'])->name('products.create');
+
+    // Stock Adjustment + Inventory Valuation — the rest of Inventory Management,
+    // beyond what Purchases (stock in) and Sales (stock out) already cover.
+    Route::get('/inventory/adjustments', [StockAdjustmentController::class, 'index'])->name('inventory.adjustments.index');
+    Route::post('/inventory/adjustments', [StockAdjustmentController::class, 'store'])->name('inventory.adjustments.store');
+    Route::get('/inventory/valuation', [InventoryValuationController::class, 'index'])->name('inventory.valuation');
     Route::post('/products', [ProductController::class, 'store'])->name('products.store');
     Route::get('/products/{product}/edit', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');

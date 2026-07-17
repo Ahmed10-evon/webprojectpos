@@ -8,7 +8,7 @@ class Product extends Model
 {
     protected $fillable = [
         'barcode', 'name', 'category', 'brand', 'unit',
-        'price', 'quantity', 'status',
+        'price', 'quantity', 'reorder_level', 'status',
     ];
 
     protected function casts(): array
@@ -16,6 +16,7 @@ class Product extends Model
         return [
             'price' => 'decimal:2',
             'quantity' => 'integer',
+            'reorder_level' => 'integer',
         ];
     }
 
@@ -24,8 +25,24 @@ class Product extends Model
         return $this->hasMany(Sale::class);
     }
 
-    public function isLowStock(int $threshold = 3): bool
+    public function stockAdjustments()
     {
-        return $this->status !== 'archived' && $this->quantity > 0 && $this->quantity <= $threshold;
+        return $this->hasMany(StockAdjustment::class);
+    }
+
+    /**
+     * Low Stock Alert check — uses this product's own reorder_level rather
+     * than one fixed number for the whole shop, so a low-turnover item (say,
+     * reorder at 3) and a fast-moving one (reorder at 20) can each have a
+     * sensible threshold.
+     */
+    public function isLowStock(): bool
+    {
+        return $this->status !== 'archived' && $this->quantity > 0 && $this->quantity <= $this->reorder_level;
+    }
+
+    public function isOutOfStock(): bool
+    {
+        return $this->status !== 'archived' && $this->quantity === 0;
     }
 }

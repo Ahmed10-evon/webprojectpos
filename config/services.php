@@ -35,4 +35,22 @@ return [
         ],
     ],
 
+    'openweather' => [
+        'key' => env('OPENWEATHER_API_KEY'),
+        'city' => env('OPENWEATHER_CITY', 'Khulna,BD'),
+        'units' => env('OPENWEATHER_UNITS', 'metric'),
+    ],
+
+    'timezonedb' => [
+        'key' => env('TIMEZONEDB_API_KEY'),
+        'gateway' => env('TIMEZONEDB_GATEWAY', 'https://api.timezonedb.com'),
+        'zone' => env('TIMEZONEDB_ZONE', 'Asia/Dhaka'),
+    ],
+
+    'currencyapi' => [
+        'key' => env('CURRENCYAPI_KEY'),
+        'base' => env('CURRENCYAPI_BASE', 'USD'),
+        'targets' => env('CURRENCYAPI_TARGETS', 'BDT,EUR,GBP'),
+    ],
+
 ];

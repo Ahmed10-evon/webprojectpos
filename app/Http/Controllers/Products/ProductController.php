@@ -56,6 +56,7 @@ class ProductController extends Controller
             'unit' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
             'quantity' => ['required', 'integer', 'min:0'],
+            'reorder_level' => ['required', 'integer', 'min:0'],
         ]);
 
         $data['unit'] = $data['unit'] ?: 'Piece';
@@ -85,6 +86,7 @@ class ProductController extends Controller
             'unit' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
             'quantity' => ['required', 'integer', 'min:0'],
+            'reorder_level' => ['required', 'integer', 'min:0'],
         ]);
 
         $data['unit'] = $data['unit'] ?: 'Piece';
