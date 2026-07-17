@@ -1,10 +1,10 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DailyCostController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Membership\MembershipController;
 use App\Http\Controllers\PosController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Products\BrandController;
 use App\Http\Controllers\Products\CategoryController;
 use App\Http\Controllers\Products\ProductController;
@@ -29,16 +29,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('dashboard'));
 
-// --- Guest: login ---
-Route::middleware('guest')->group(function () {
-    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login'])->name('login.attempt');
-});
-Route::post('/logout', [LoginController::class, 'logout'])->middleware('auth')->name('logout');
+// Login, Logout, Password Reset, and Profile routes are provided by
+// Laravel Breeze via routes/auth.php (required at the bottom of this file).
+// Breeze's public Register route has been removed — see routes/auth.php —
+// since only an Admin may create new accounts, via Staff Accounts below.
 
 // --- Everyone signed in (Admin + Salesman) ---
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // Products: viewing the list is fine for both roles; managing it is admin-only (below).
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
@@ -152,3 +153,5 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::post('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
+
+require __DIR__.'/auth.php';

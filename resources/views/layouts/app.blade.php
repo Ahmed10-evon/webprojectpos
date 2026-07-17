@@ -79,6 +79,7 @@
         <div class="px-4 pt-3 pb-5 border-t border-white/10">
             <p class="px-3 text-xs text-gray-400 mb-1">{{ $user->name }}</p>
             <p class="px-3 text-[10px] uppercase tracking-widest text-brass mb-3">{{ $user->role }}</p>
+            <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded-lg text-sm font-semibold {{ request()->routeIs('profile.edit') ? 'bg-brass text-white' : 'hover:bg-white/5' }}">My Profile</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button class="w-full text-left px-3 py-2 rounded-lg text-sm font-semibold text-red-300 hover:bg-white/5">Log Out</button>
