@@ -9,7 +9,10 @@
         @method('PUT')
         <div>
             <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Barcode (read-only)</label>
-            <input disabled value="{{ $product->barcode }}" class="w-full px-4 py-2.5 border rounded font-mono bg-gray-50">
+            <div class="flex gap-2">
+                <input disabled value="{{ $product->barcode }}" class="flex-1 px-4 py-2.5 border rounded font-mono bg-gray-50">
+                <a href="{{ route('products.qr', $product) }}" class="px-4 py-2.5 border rounded text-xs font-bold uppercase whitespace-nowrap">QR Code</a>
+            </div>
         </div>
         <div>
             <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Item Title</label>

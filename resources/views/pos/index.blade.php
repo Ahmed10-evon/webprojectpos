@@ -65,11 +65,18 @@
             <button class="w-full py-2 border border-white/20 rounded text-xs font-bold uppercase">Apply</button>
         </form>
 
+        @if($usdRate)
+            <div class="flex mb-3 rounded overflow-hidden border border-white/10 text-xs font-bold uppercase" id="pos-currency-toggle">
+                <button type="button" data-currency="BDT" class="flex-1 py-1.5 bg-brass text-white">BDT</button>
+                <button type="button" data-currency="USD" class="flex-1 py-1.5 bg-white/5 text-gray-400">USD</button>
+            </div>
+        @endif
+
         <div class="space-y-2 text-sm font-mono mb-5">
-            <div class="flex justify-between"><span class="text-gray-400">Subtotal</span><span>৳{{ number_format($totals['subtotal'], 2) }}</span></div>
-            <div class="flex justify-between"><span class="text-gray-400">Discount</span><span>−৳{{ number_format($totals['discount'], 2) }}</span></div>
-            <div class="flex justify-between"><span class="text-gray-400">Tax</span><span>+৳{{ number_format($totals['tax'], 2) }}</span></div>
-            <div class="flex justify-between text-lg font-bold pt-2 border-t border-white/10"><span>Total</span><span>৳{{ number_format($totals['total'], 2) }}</span></div>
+            <div class="flex justify-between"><span class="text-gray-400">Subtotal</span><span><span class="pos-amount" data-bdt="{{ $totals['subtotal'] }}">৳{{ number_format($totals['subtotal'], 2) }}</span></span></div>
+            <div class="flex justify-between"><span class="text-gray-400">Discount</span><span>−<span class="pos-amount" data-bdt="{{ $totals['discount'] }}">৳{{ number_format($totals['discount'], 2) }}</span></span></div>
+            <div class="flex justify-between"><span class="text-gray-400">Tax</span><span>+<span class="pos-amount" data-bdt="{{ $totals['tax'] }}">৳{{ number_format($totals['tax'], 2) }}</span></span></div>
+            <div class="flex justify-between text-lg font-bold pt-2 border-t border-white/10"><span>Total</span><span><span class="pos-amount" data-bdt="{{ $totals['total'] }}">৳{{ number_format($totals['total'], 2) }}</span></span></div>
         </div>
 
         <form method="POST" action="{{ route('pos.checkout') }}" class="space-y-3">
@@ -84,4 +91,40 @@
         </form>
     </div>
 </div>
+
+@if($usdRate)
+<script>
+    (function () {
+        const usdRate = {{ $usdRate }}; // BDT per 1 USD, from the currency API
+        const toggle = document.getElementById('pos-currency-toggle');
+        if (!toggle) return;
+
+        const buttons = toggle.querySelectorAll('[data-currency]');
+        const amounts = document.querySelectorAll('.pos-amount');
+
+        function render(currency) {
+            amounts.forEach(el => {
+                const bdt = parseFloat(el.dataset.bdt);
+                if (currency === 'USD') {
+                    el.textContent = '$' + (bdt / usdRate).toFixed(2);
+                } else {
+                    el.textContent = '৳' + bdt.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                }
+            });
+
+            buttons.forEach(btn => {
+                const active = btn.dataset.currency === currency;
+                btn.classList.toggle('bg-brass', active);
+                btn.classList.toggle('text-white', active);
+                btn.classList.toggle('bg-white/5', !active);
+                btn.classList.toggle('text-gray-400', !active);
+            });
+        }
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => render(btn.dataset.currency));
+        });
+    })();
+</script>
+@endif
 @endsection

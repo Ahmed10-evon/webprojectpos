@@ -35,6 +35,16 @@ class ProductController extends Controller
         ]);
     }
 
+    /**
+     * Printable barcode/QR label for one product — open to both roles
+     * (same visibility as List Products), since restocking staff may need
+     * to print a replacement shelf tag too.
+     */
+    public function qr(Product $product)
+    {
+        return view('products.qr', ['product' => $product]);
+    }
+
     // --- Everything below is admin-only (enforced by route middleware) ---
 
     public function create()

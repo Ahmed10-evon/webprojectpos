@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
 
     // Products: viewing the list is fine for both roles; managing it is admin-only (below).
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/products/{product}/qr', [ProductController::class, 'qr'])->name('products.qr');
 
     // Low Stock Alert — informational, open to both roles (same as List Products).
     Route::get('/inventory/low-stock', [LowStockController::class, 'index'])->name('inventory.low-stock');

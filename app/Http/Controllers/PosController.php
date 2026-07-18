@@ -6,6 +6,7 @@ use App\Models\BusinessSetting;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\TaxRate;
+use App\Services\CurrencyService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -21,16 +22,27 @@ class PosController extends Controller
     const PAYMENT_METHODS = ['cash', 'bkash', 'nagad', 'upay', 'rocket', 'bank/card'];
     const CART_SESSION_KEY = 'pos.cart';
 
+    public function __construct(protected CurrencyService $currency)
+    {
+    }
+
     public function index(Request $request)
     {
         $cart = $this->cart($request);
         $taxRates = TaxRate::orderBy('name')->get();
+
+        // BDT-per-USD rate for the BDT/USD toggle in the checkout panel —
+        // null if the currency API isn't configured or is down, in which
+        // case the view just doesn't show the toggle at all.
+        $currencyRates = $this->currency->rates();
+        $usdRate = $currencyRates['rates']['BDT'] ?? null;
 
         return view('pos.index', [
             'cart' => $cart,
             'taxRates' => $taxRates,
             'paymentMethods' => self::PAYMENT_METHODS,
             'totals' => $this->totals($cart, (float) $request->session()->get('pos.discount', 0), $request->session()->get('pos.tax_rate_id')),
+            'usdRate' => $usdRate,
         ]);
     }
 
@@ -202,6 +214,7 @@ class PosController extends Controller
             'trx_id' => $dbTrxId,
             'business' => BusinessSetting::first(),
             'sold_at' => now(),
+            'receipt_ref' => 'CRV-'.now()->format('YmdHis'),
         ];
 
         $request->session()->forget([self::CART_SESSION_KEY, 'pos.discount', 'pos.tax_rate_id']);

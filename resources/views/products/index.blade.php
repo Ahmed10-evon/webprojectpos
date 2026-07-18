@@ -35,6 +35,7 @@
                             {{ $item->status === 'archived' ? 'archived' : $item->quantity.' in stock' }}
                         </span>
                     </div>
+                    <a href="{{ route('products.qr', $item) }}" class="w-8 h-8 flex items-center justify-center border rounded text-xs" title="Print barcode QR label">▦</a>
                     @if(auth()->user()->isAdmin())
                         <div class="flex gap-1">
                             @if($item->status === 'archived')

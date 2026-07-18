@@ -30,6 +30,11 @@ class DashboardController extends Controller
             ->where('status', 'completed')
             ->sum('amount_paid');
 
+        // 1 USD = X BDT (from the currency API) — used to also show today's
+        // revenue converted to USD on the dashboard tile.
+        $usdRate = $currency['rates']['BDT'] ?? null;
+        $todayRevenueUsd = $usdRate ? $todayRevenue / $usdRate : null;
+
         $todayItemsSold = Sale::whereDate('sold_at', today())
             ->where('status', 'completed')
             ->count();
@@ -71,7 +76,7 @@ class DashboardController extends Controller
         }
 
         return view('dashboard.index', compact(
-            'todayRevenue', 'todayItemsSold', 'lowStockItems',
+            'todayRevenue', 'todayRevenueUsd', 'todayItemsSold', 'lowStockItems',
             'outOfStockCount', 'recentSales', 'topSellers', 'weather', 'timezone', 'currency'
         ));
     }
