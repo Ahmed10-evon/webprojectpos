@@ -120,7 +120,7 @@
         </div>
         <div class="mx-5 h-px bg-white/10"></div>
 
-        <nav class="relative flex-1 px-3 py-5 space-y-1 overflow-y-auto text-sm font-semibold">
+        <nav id="sidebar-nav" class="relative flex-1 px-3 py-5 space-y-1 overflow-y-auto text-sm font-semibold">
             <div id="nav-liquid-indicator"
                  class="absolute left-3 right-3 rounded-lg opacity-0 transition-[top,height,opacity,box-shadow,background-color] duration-300 ease-out pointer-events-none"
                  style="top:0; height:0; background:#4C6FA5;"></div>
@@ -304,6 +304,28 @@
             requestAnimationFrame(() => {
                 indicator.style.transition = wasTransition;
             });
+        });
+    })();
+</script>
+
+<script>
+    // Remembers how far the sidebar was scrolled, so clicking a link near
+    // the bottom (e.g. Membership, Settings) doesn't jump you back to the
+    // top on the next page load — each click is a full page reload in this
+    // app, so the browser has no memory of scroll position on its own.
+    (function () {
+        const nav = document.getElementById('sidebar-nav');
+        if (!nav) return;
+
+        const STORAGE_KEY = 'craveabs.sidebarScrollTop';
+
+        const saved = sessionStorage.getItem(STORAGE_KEY);
+        if (saved !== null) {
+            nav.scrollTop = parseInt(saved, 10);
+        }
+
+        nav.addEventListener('scroll', () => {
+            sessionStorage.setItem(STORAGE_KEY, nav.scrollTop);
         });
     })();
 </script>
