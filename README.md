@@ -125,8 +125,7 @@ The database consists of ~20 tables organized into seven functional modules: **I
 
 Relationships are primarily **one-to-many** (e.g., one Product has many Sales, one User logs many Stock Adjustments). Product category/brand/unit are stored as plain strings matched by name against their reference tables, rather than enforced foreign keys — a deliberate simplification for this scale of application.
 
-> Add your ER diagram image at `docs/screenshots/erd.png` and reference it here:
-> `![ER Diagram](docs/screenshots/erd.png)`
+> ![ER Diagram](docs/screenshots/erd.png)
 
 ---
 
