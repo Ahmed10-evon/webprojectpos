@@ -1,25 +1,71 @@
-# CRAVE ABS — Point of Sale & Business Management System
+# CRAVE ABS — Clothing Brand Admin & Point-of-Sale System
 
-CRAVE ABS is a full-stack **PHP Laravel + MySQL (phpMyAdmin)** web application built for a clothing brand's retail shop. It replaces an earlier Next.js/Supabase prototype with a from-scratch Laravel implementation covering product inventory, a barcode-driven POS terminal, purchasing/stock workflows, memberships, refunds, and business reports — all behind server-enforced, role-based access control.
+**CRAVE ABS** is a full-featured web application for managing a small clothing brand's day-to-day retail operations — product catalog, inventory, point-of-sale, purchasing, staff accounts, and financial reporting — built with **Laravel 11** and **MySQL**.
+
+It was developed as a Web Programming Lab course project, and covers the five core requirements of a small-shop inventory & sales tracker (Product Management, Inventory Management, Sales Management, Low Stock Alert, and Reports & Dashboard) with a genuine two-role permission system on top.
 
 ---
 
 ## Table of Contents
 
-1. [Tech Stack](#tech-stack)
-2. [Key Features](#key-features)
-3. [User Roles](#user-roles)
-4. [Project Structure](#project-structure)
-5. [System Architecture](#system-architecture)
-6. [Database Schema](#database-schema)
-7. [Requirements](#requirements)
-8. [Installation & Setup (with phpMyAdmin)](#installation--setup-with-phpmyadmin)
-9. [Environment Variables](#environment-variables)
-10. [Default Login Accounts](#default-login-accounts)
-11. [Role-Based Access Control](#role-based-access-control)
-12. [Third-Party API Integrations](#third-party-api-integrations)
-13. [Testing](#testing)
-14. [Notes on Scope](#notes-on-scope)
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [User Roles](#user-roles)
+- [Screenshots](#screenshots)
+- [Database Design](#database-design)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Default Login Credentials](#default-login-credentials)
+- [Project Structure](#project-structure)
+- [Third-Party API Integrations](#third-party-api-integrations)
+- [License](#license)
+
+---
+
+## Overview
+
+CRAVE ABS replaces manual, paper-based stock and sales tracking with a single web application. Two roles use it day to day:
+
+- **Admin** — full access to every module: product management, purchasing, refunds, financial reports, staff accounts, and settings.
+- **Salesman** — can operate the POS terminal, view stock, and record sales, but is **server-side blocked** (not just UI-hidden) from registering new products, viewing purchase records, processing refunds, or accessing financial reports.
+
+---
+
+## Key Features
+
+### 📦 Product Management
+- Full CRUD for products, each with a unique barcode, price, quantity, and category/brand/unit tagging
+- Auto-generated QR barcode labels (via QuickChart) for printing shelf tags
+- Manageable Category, Unit, and Brand reference lists
+
+### 🏷️ Inventory Management
+- Stock increases via **Purchases** (receiving stock against a barcode)
+- Stock decreases via **Sales** and **Purchase Returns**
+- **Stock Adjustment** — manually correct stock for damage, theft, or a physical recount, with a full audit trail (before/after quantity, reason, who made the change)
+- **Inventory Valuation** — total worth of everything currently in stock, broken down by category
+
+### 🧾 Sales Management
+- **POS Terminal** — barcode scan → cart → discount/tax → multi-payment checkout (Cash, bKash, Nagad, Upay, Rocket, Bank/Card), wrapped in an atomic database transaction
+- **Add Sale** — search-based quick sale without a barcode scanner
+- **Sales Orders** — track customer pre-orders with expected fulfillment dates
+- **Refunds** — reverse a completed sale and automatically restore stock (Admin only)
+- Printable receipts with an embedded QR code
+
+### 🔔 Low Stock Alert
+- Each product has its **own** reorder threshold (not one fixed number store-wide)
+- Dedicated Low Stock Alert page with Low / Out-of-Stock / All filters
+- One-click "Request Restock" straight into Purchase Requisition
+
+### 📊 Reports & Dashboard
+- Overview dashboard: today's revenue (in BDT **and** live-converted USD), items sold, low-stock count, top sellers, recent activity
+- Reports page: revenue by date range, breakdown by payment method, net profit after logged daily costs, CSV export
+
+### 👥 Additional Modules
+- **Purchasing** — Purchase Requisition → Purchase Order (multi-line) → Add Purchase → Purchase History → Purchase Returns
+- **Membership** — customer loyalty enrollment with a configurable discount percentage
+- **Staff Accounts** — Admin creates/deactivates Salesman and Admin logins (no public self-registration)
+- **Settings** — business info, receipt footer text, barcode prefix, tax rates
 
 ---
 
@@ -27,170 +73,91 @@ CRAVE ABS is a full-stack **PHP Laravel + MySQL (phpMyAdmin)** web application b
 
 | Layer | Technology |
 |---|---|
-| Backend framework | **Laravel 11** (PHP 8.2+) |
-| Database | **MySQL**, managed through **phpMyAdmin** |
+| Backend Framework | Laravel 11 (PHP 8.2) |
+| Database | MySQL, managed via phpMyAdmin |
 | ORM | Eloquent |
-| Frontend | Blade templates + **Tailwind CSS** (loaded via CDN — no Node/npm build step required) |
-| Auth scaffold | Laravel Breeze (session-based) |
-| Package manager | Composer (PHP), NPM (optional, Vite assets only) |
-| External APIs | CurrencyAPI, OpenWeather, TimezoneDB (dashboard widgets) |
-
-Node.js is **not required** to run the app day-to-day — the UI uses the Tailwind CDN build, so there is no `npm run dev`/`npm run build` step in the loop.
-
----
-
-## Key Features
-
-- **Authentication** — session + cookie based login (`Auth::attempt`), "Remember me", forced logout on account deactivation. Public self-registration is disabled; only an Admin can create new logins.
-- **Products** — barcode-based catalog, category/brand/unit tagging, price & stock management, low-stock flagging, archive/restore.
-- **POS Terminal** — scan a barcode → item added to a session-based cart → apply discount/tax → checkout → stock automatically decremented → printable receipt.
-- **Sales** — full sales ledger (All Sales), manual/search-based sale entry (Add Sale), customer pre-orders (Sales Orders).
-- **Purchasing** — requisitions, multi-line purchase orders, receiving stock against a barcode, purchase history, purchase returns.
-- **Refunds** — look up a completed sale, refund it, stock is restored automatically.
-- **Reports** — revenue by date range and payment method, net profit vs. daily costs, CSV export.
-- **Daily Cost / Sales Survey** — manual expense logging and a day-by-day sales feed.
-- **Membership** — enroll/list/renew/revoke walk-in customer memberships with a configurable discount percentage.
-- **Settings** — business info, receipt footer text, barcode prefix, tax rates.
-- **Staff Accounts** — Admins create, deactivate, or delete Admin/Salesman logins.
-- **Dashboard** — today's revenue, low-stock alerts, live currency exchange rate, live weather, and live local time widgets.
+| Authentication | Laravel Breeze (session + cookie based, public registration disabled) |
+| Templating | Blade |
+| Styling | Tailwind CSS (via CDN — no build step required for styling) |
+| Frontend interactivity | Vanilla JavaScript (animated sidebar navigation, live currency toggle, no JS framework) |
+| External APIs | OpenWeatherMap, TimezoneDB, currencyapi.com, QuickChart (QR codes) |
 
 ---
 
 ## User Roles
 
-| Role | Description |
+| Capability | Admin | Salesman |
+|---|:---:|:---:|
+| POS Terminal / record sales | ✅ | ✅ |
+| View product list | ✅ | ✅ |
+| Add / edit / archive products | ✅ | ❌ |
+| View purchases / purchase history | ✅ | ❌ |
+| Process refunds | ✅ | ❌ |
+| View financial reports | ✅ | ❌ |
+| Manage staff accounts | ✅ | ❌ |
+| Enroll members | ✅ | ✅ |
+
+Role checks are enforced **server-side** via a custom `role:admin` route middleware — a Salesman account is blocked with an HTTP 403 even when navigating to an admin-only URL directly, not just when the sidebar link is hidden.
+
+---
+
+## Screenshots
+
+> Add your own screenshots to `docs/screenshots/` and update the paths below.
+
+| Login | Dashboard |
 |---|---|
-| **Admin** | Full access to every module in the system. |
-| **Salesman** | Can use the POS, view products, record sales, and manage membership sign-ups — but **cannot** manage products, purchases, refunds, reports, daily costs/survey, or settings. |
+| ![Login](docs/screenshots/login.png) | ![Dashboard](docs/screenshots/dashboard.png) |
 
-Every restricted route is protected **server-side**, not just hidden in the sidebar — visiting a restricted URL directly as a Salesman returns an HTTP 403.
-
----
-
-## Project Structure
-
-```
-app/
-  Http/
-    Controllers/       # One controller per module (Products, POS, Sales,
-                        # Purchases, Refunds, Reports, Settings, Users, ...)
-    Middleware/         # EnsureUserHasRole.php, EnsureAccountIsActive.php
-    Requests/            # Form validation classes (e.g. LoginRequest)
-  Models/                # Eloquent models: Product, Sale, User, Purchase, ...
-  Services/               # CurrencyService, WeatherService, TimezoneService
-database/
-  migrations/             # Versioned table schema definitions
-  seeders/                # Default Admin/Salesman accounts + reference data
-resources/
-  views/                  # Blade templates, grouped by module
-    layouts/               # Shared app shell (sidebar, Tailwind, theme)
-    pos/, products/, sales/, purchases/, settings/, users/ ...
-routes/
-  web.php                 # All application routes
-  auth.php                # Breeze authentication routes
-config/                    # app.php, database.php, services.php, session.php
-.env                        # Local environment configuration (not committed)
-```
-
----
-
-## System Architecture
-
-The project follows Laravel's **MVC** pattern:
-
-```
-Browser Request
-     |
-     v
-routes/web.php  --->  Middleware (auth, role:admin, active)
-     |
-     v
-Controller (app/Http/Controllers/...)
-     |            \
-     v             v
-Model (Eloquent)   Service (CurrencyService, WeatherService, ...)
-     |
-     v
-MySQL Database (via phpMyAdmin)
-     |
-     v
-Blade View (resources/views/...) ---> Rendered HTML back to Browser
-```
-
-A request first hits **`routes/web.php`**, which maps a URL + HTTP verb to a **Controller** method after passing through **Middleware** (authentication + role checks). The Controller talks to **Eloquent Models** to read/write MySQL data (and to **Service** classes for outbound API calls), then hands the data to a **Blade View**, which renders the final HTML.
-
----
-
-## Database Schema
-
-All tables are defined as versioned migrations under `database/migrations/` and can be recreated on any machine with `php artisan migrate`.
-
-| Table | Purpose |
+| POS Terminal | Products |
 |---|---|
-| `users` | Login accounts — `role` (admin/salesman) and `is_active` columns drive access control |
-| `products` | Product catalog/inventory — `barcode` (unique), `category`, `brand`, `unit` (plain strings), `price`, `quantity`, `status` |
-| `categories`, `units`, `brands` | Reference lists used to populate dropdowns (not foreign-keyed to `products`) |
-| `sales` | One row per unit sold — `product_id` & `user_id` foreign keys, `amount_paid`, `discount_amount`, `tax_amount`, `status`, `sold_at` |
-| `sales_orders` | Customer pre-orders (standalone — not linked to `sales`) |
-| `memberships` | Walk-in customer loyalty records (phone, expiry, status) |
-| `membership_settings` | Single-row config for the membership discount percentage |
-| `purchase_requisitions` | What needs re-stocking |
-| `purchase_orders` / `purchase_order_items` | Supplier orders and their line items |
-| `purchases` | Stock received against a barcode (optional `product_id` link) |
-| `purchase_returns` | Purchases reversed/returned to a supplier |
-| `stock_adjustments` | Manual inventory corrections — `product_id` & `user_id` foreign keys, `direction`, before/after quantities |
-| `business_settings` | Shop name, address, receipt footer, barcode prefix |
-| `tax_rates` | Configurable tax rates used at checkout |
-| `daily_costs` | Manual daily expense entries feeding the Reports module |
-| `survey_records` | Day-by-day sales feed |
+| ![POS](docs/screenshots/pos.png) | ![Products](docs/screenshots/products.png) |
 
-**Foreign-key relationships that actually exist in the schema:**
-
-```
-users        ──< sales
-users        ──< stock_adjustments
-products     ──< sales
-products     ──< stock_adjustments
-products     ──< purchases            (nullable)
-products     ──< purchase_returns     (nullable)
-purchase_orders ──< purchase_order_items
-```
-
-> `categories`, `units`, and `brands` are **not** foreign-keyed to `products` — the product record stores their names as plain strings. `sales_orders`, `memberships`, and `purchase_requisitions` are standalone tables with no foreign keys to other modules.
+| Reports | Low Stock Alert |
+|---|---|
+| ![Reports](docs/screenshots/reports.png) | ![Low Stock](docs/screenshots/low-stock.png) |
 
 ---
 
-## Requirements
+## Database Design
 
+The database consists of ~20 tables organized into seven functional modules: **Identity** (users, sessions), **Catalog** (products, categories, units, brands), **Selling** (sales, sales orders), **Buying** (requisitions, purchase orders, purchases, returns), **Inventory** (stock adjustments), **Membership**, and **Money & Settings**.
+
+Relationships are primarily **one-to-many** (e.g., one Product has many Sales, one User logs many Stock Adjustments). Product category/brand/unit are stored as plain strings matched by name against their reference tables, rather than enforced foreign keys — a deliberate simplification for this scale of application.
+
+> Add your ER diagram image at `docs/screenshots/erd.png` and reference it here:
+> `![ER Diagram](docs/screenshots/erd.png)`
+
+---
+
+## Getting Started
+
+### Requirements
 - PHP 8.2+
 - Composer
-- MySQL (via **XAMPP** / **WAMP** / **Laragon**, managed through **phpMyAdmin**)
-- Node.js is **not required**
+- MySQL (e.g. via XAMPP/Laragon, with phpMyAdmin)
+- Node.js (only needed for the Breeze asset build step)
 
----
-
-## Installation & Setup (with phpMyAdmin)
-
-**1. Install PHP dependencies**
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/<your-username>/<your-repo>.git
+cd <your-repo>
+
+# Install PHP dependencies
 composer install
-```
 
-**2. Create your local environment file**
+# Install Breeze's frontend assets
+npm install
+npm run build
 
-```bash
+# Copy the environment file
 cp .env.example .env
 php artisan key:generate
 ```
 
-**3. Create the database in phpMyAdmin**
-
-- Open phpMyAdmin (usually `http://localhost/phpmyadmin`).
-- Click **New**, name the database `crave_abs`, and set the collation to `utf8mb4_unicode_ci` (or leave the default `utf8mb4`).
-- No tables need to be created manually — Laravel's migrations will build the schema in the next step.
-
-**4. Point `.env` at your MySQL/phpMyAdmin database**
+Create a MySQL database (e.g. `crave_abs`) in phpMyAdmin, then update `.env`:
 
 ```env
 DB_CONNECTION=mysql
@@ -201,123 +168,96 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-Adjust `DB_USERNAME` / `DB_PASSWORD` to match your local MySQL credentials (XAMPP/Laragon defaults are shown above).
-
-**5. Run migrations and seed starter data**
+Run migrations and seed starter data:
 
 ```bash
 php artisan migrate --seed
-```
-
-This creates every table listed in [Database Schema](#database-schema) and seeds two starter accounts plus reference data (categories/units/brands). You can refresh and re-seed at any time with `php artisan migrate:fresh --seed` — check phpMyAdmin's **Structure** tab afterward to confirm the tables were created.
-
-**6. Serve the application**
-
-```bash
 php artisan serve
 ```
 
-Visit **http://127.0.0.1:8000**.
+Visit `http://127.0.0.1:8000`.
 
 ---
 
 ## Environment Variables
 
-Laravel reads all environment-specific configuration from `.env` via the `env()` helper, exposed to the app through `config/*.php`. Copy `.env.example` to `.env` and fill in the values below.
+In addition to the standard Laravel/database variables, this project uses:
 
-**Core app & database**
+```env
+# OpenWeatherMap — dashboard weather widget
+OPENWEATHER_API_KEY=
+OPENWEATHER_CITY="Khulna,BD"
+OPENWEATHER_UNITS=metric
 
-| Variable | Purpose |
-|---|---|
-| `APP_NAME`, `APP_ENV`, `APP_KEY`, `APP_URL` | App name, environment, encryption key, base URL |
-| `APP_DEBUG` | Detailed error pages during development |
-| `DB_CONNECTION` | Set to `mysql` |
-| `DB_HOST`, `DB_PORT` | MySQL server address (`127.0.0.1:3306` for XAMPP/Laragon) |
-| `DB_DATABASE` | Database name — `crave_abs` |
-| `DB_USERNAME`, `DB_PASSWORD` | MySQL/phpMyAdmin login credentials |
-| `SESSION_DRIVER`, `SESSION_LIFETIME` | Sessions are stored in the `sessions` MySQL table |
+# TimezoneDB — dashboard local-time widget
+TIMEZONEDB_API_KEY=
+TIMEZONEDB_GATEWAY=https://api.timezonedb.com
+TIMEZONEDB_ZONE=Asia/Dhaka
 
-**Third-party API keys** (power the dashboard widgets)
+# currencyapi.com — dashboard exchange-rate widget & POS BDT/USD toggle
+CURRENCYAPI_KEY=
+CURRENCYAPI_BASE=USD
+CURRENCYAPI_TARGETS=BDT,EUR,GBP
+```
 
-| Variable | Used by |
-|---|---|
-| `CURRENCYAPI_KEY`, `CURRENCYAPI_BASE`, `CURRENCYAPI_TARGETS` | `app/Services/CurrencyService.php` — live exchange rates |
-| `OPENWEATHER_API_KEY`, `OPENWEATHER_CITY`, `OPENWEATHER_UNITS` | `app/Services/WeatherService.php` — dashboard weather widget |
-| `TIMEZONEDB_API_KEY`, `TIMEZONEDB_ZONE`, `TIMEZONEDB_GATEWAY` | `app/Services/TimezoneService.php` — dashboard clock widget |
-| `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_FROM_ADDRESS` | Outgoing mail (password-reset emails) |
-
-If any API key is left blank, the corresponding dashboard widget fails gracefully (returns `null`) instead of breaking the page.
+All three are optional — if a key is missing or the API is unreachable, the related widget simply doesn't render rather than breaking the page. No key is required for QR code generation (QuickChart is a free, public API).
 
 ---
 
-## Default Login Accounts
+## Default Login Credentials
 
-> ⚠️ Change these passwords after first login.
+Seeded by `php artisan migrate --seed`:
 
 | Role | Email | Password |
 |---|---|---|
 | Admin | `admin@craveabs.test` | `password` |
 | Salesman | `salesman@craveabs.test` | `password` |
 
-Admins can create or deactivate additional Salesman/Admin accounts under **Staff Accounts** (`/users`).
+**Change these immediately in any non-local environment.** Additional staff accounts can be created by an Admin under Staff Accounts.
 
 ---
 
-## Role-Based Access Control
+## Project Structure
 
-Every admin-only page is grouped under this in `routes/web.php`:
-
-```php
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    // Product management, all of Purchases, Refunds, Reports,
-    // Daily Cost, Survey, Membership Settings, Settings, Staff Accounts
-});
 ```
-
-The `role` middleware alias resolves to `app/Http/Middleware/EnsureUserHasRole.php`, which checks the signed-in user's `role` column against the roles passed into `role:...` and aborts with a `403` otherwise:
-
-```php
-class EnsureUserHasRole
-{
-    public function handle(Request $request, Closure $next, string ...$roles): Response
-    {
-        $user = $request->user();
-        if (! $user || ! in_array($user->role, $roles, true)) {
-            abort(403, 'You do not have permission to access this page.');
-        }
-        return $next($request);
-    }
-}
+app/
+├── Http/
+│   ├── Controllers/     # One controller per feature area (Products, Purchases, Sales, Inventory, etc.)
+│   ├── Middleware/       # EnsureUserHasRole (RBAC), EnsureAccountIsActive
+│   └── Requests/         # Form validation classes
+├── Models/                # Eloquent models — one per database table
+├── Services/               # Third-party API wrappers (Weather, Timezone, Currency)
+database/
+├── migrations/            # Schema, in order
+└── seeders/                # Starter accounts + reference data
+resources/
+└── views/                  # Blade templates, one folder per feature — mirrors app/Http/Controllers
+routes/
+├── web.php                  # All application routes, grouped by role
+└── auth.php                  # Laravel Breeze authentication routes
 ```
-
-A second middleware, `EnsureAccountIsActive`, runs globally on every web request and force-logs-out any user whose `is_active` flag has been switched off by an Admin.
-
-The sidebar (`resources/views/layouts/app.blade.php`) also hides restricted links from a Salesman for a cleaner UI, but the **actual enforcement is the middleware** — typing a restricted URL directly still returns a 403.
 
 ---
 
 ## Third-Party API Integrations
 
-`app/Services/` isolates all outbound HTTP calls so controllers stay thin:
+| API | Used for |
+|---|---|
+| [OpenWeatherMap](https://openweathermap.org/) | Current weather on the dashboard |
+| [TimezoneDB](https://timezonedb.com/) | Local time display on the dashboard |
+| [currencyapi.com](https://currencyapi.com/) | Live USD/BDT/EUR/GBP exchange rates — dashboard widget and a live BDT/USD toggle in the POS checkout panel |
+| [QuickChart](https://quickchart.io/) | QR code generation for product labels and sale receipts |
 
-- **`CurrencyService`** — fetches live exchange rates from CurrencyAPI, cached for 6 hours.
-- **`WeatherService`** — fetches current weather from OpenWeather for the dashboard.
-- **`TimezoneService`** — fetches the current local time from TimezoneDB.
-
-Each service is constructor-injected into `DashboardController` (and `PosController` where relevant), reads its API key from `.env`, and caches responses so free-tier API quotas aren't burned on every page load.
-
----
-
-## Testing
-
-```bash
-php artisan test
-```
-
-PHPUnit feature tests under `tests/Feature/` cover the authentication flows inherited from Breeze (login, password reset/confirmation/update, email verification) and profile management. Manual testing should also confirm that Salesman-restricted URLs return `403` when visited directly, proving the middleware enforces access control rather than just the hidden sidebar links.
+Each integration follows the same pattern: the API key stays server-side (`.env` → `config/services.php`), the response is cached to avoid unnecessary repeat calls, and any failure is handled gracefully so a third-party outage never breaks the page it appears on.
 
 ---
 
-## Notes on Scope
+## License
 
-This is a faithful, from-scratch Laravel implementation of the original app's feature set and data model (products, sales, purchases, requisitions, purchase orders, returns, memberships, daily costs, survey, settings) — it is **not** a line-by-line port of the earlier React/Supabase codebase, since the two frameworks work quite differently.
+This project was built for academic purposes as part of a Web Programming Lab course.
+
+---
+
+## Author
+
+Built by **[TASNIM AHMED EVON]** — Web Programming Lab, [KUET].
